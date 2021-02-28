@@ -109,7 +109,7 @@ $ cat /sys.module/kvm_amd/parameters/nested
 ```
 **Passing IOMMU and VFIO to kernel**
 You'll need to pass both the IOMMU and the VFIO paramaters to the kernel.<br>
-Edit the file at ```/etc/default/grub``` and add the following to the ```GRYB_CMDLINE_LINUX_DEFAULT``` line:
+If you use GRUB, edit the file at ```/etc/default/grub``` and add the following to the ```GRYB_CMDLINE_LINUX_DEFAULT``` line:
 ```
 iommu=1 amd_iommu=on rd.driver.pre=vfio-pci
 ```
@@ -167,7 +167,56 @@ After installing your desired OS, check to make sure everything is working prope
 Go to the virtual machine details in Virt Manager, choose "Add Hardware," select "PCI Host Device," and choose all of the devices in the IOMMU group with your GPU.
 
 **Nvidia Pascal Patch (optional)**
-If you use Nvidia Pascal (GTX 10 series), a patch is necessary for this to work. You can download nvflash from the AUR and then type the following command to download your current GPU BIOS:
+If you use Nvidia Pascal (GTX 10 series), a patch is necessary for this to work. You can download nvflash from the AUR and then type the following commands to download your current GPU BIOS:
+```
+$ sudo rmmod nvidia_drm nvidia_modeset nvidia
+$ sudo nvflash --save backup.rom
+```
+Clone the [Nvidia Pascal VFIO Patcher](https://github.com/Matoking/NVIDIA-vBIOS-VFIO-Patcher) tool.<br>
+If you named your saved rom "backup.rom", type the following command:
+```
+$ python nvidia_vbios_vfio_patcher.py -i backup.rom -o patched.rom
+```
+Open Virt Manager, choose "Edit," "Preferences," then "Enable XML editing."<br>
+Open the VM details page and click on the XML tab. Add the following text to the file in the hostdev section.
+```
+<rom file='path/to/your/bios/patched.rom'/>
+```
+**Pass physical disk (optional)**<br>
+If you're using a physical drive instead of emulated storage, you'll need to change the content of the disk section to the following and change the source to the path of your drive.
+```
+<disk type='block' device='disk'>
+      <driver name='qemu' type='raw' />
+      <source dev='/dev/sdX'/>
+      <target dev='vdb' bus='virtio'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+ </disk>
+```
+**Set up hook manager**
+To transfer the VFIO drivers from the host to the guest and vice versa automatically, you first need to create the directory at ```/etc/libvirt/hooks```. Then, run the following commands from [The Passthrough Post](https://passthroughpo.st/simple-per-vm-libvirt-hooks-with-the-vfio-tools-hook-helper/):
+```
+$ sudo wget 'https://raw.githubusercontent.com/PassthroughPOST/VFIO-Tools/master/libvirt_hooks/qemu' \
+     -O /etc/libvirt/hooks/qemu
+$ sudo chmod +x /etc/libvirt/hooks/qemu
+$ sudo systemctl restart libvirtd.service
+```
+You'll now need to create subdirectories within the ```/etc/libvirt/hooks``` directory. Create the directories just as shown below, replacing "vm_name" with the name you created for your virtual machine.
+```
+/etc/libvirt/hooks/
+|-- qemu
+`-- qemu.d
+  `-- vm_name
+    |-- prepare
+    | `-- begin
+    `-- release
+      `-- end
+```
+**Adding scripts**<br>
+Create a configuration file inside /etc/libvirt/hooks with the name "kvm.conf". Create the following content, using the bus addresses from "check-iommu.sh" preceeded by pci_0000 and using underscores instead of colons. Mine is shown as an example below, but yours will likely be different.
+```
+VIRSH_GPU_VIDEO=pci_0000_09_00_0
+VIRSH_GPU_AUDIO=pci_0000_09_00_1
+```
 
 
 
