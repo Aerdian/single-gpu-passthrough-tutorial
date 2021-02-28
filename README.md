@@ -218,9 +218,85 @@ Create a configuration file inside /etc/libvirt/hooks with the name "kvm.conf". 
 VIRSH_GPU_VIDEO=pci_0000_09_00_0
 VIRSH_GPU_AUDIO=pci_0000_09_00_1
 ```
+Check what Nvidia drivers you will need to unload/load:
+```
+lsmod | grep -i nvidia
+```
+Create "start.sh" in /etc/libvirt/hooks/qemu.d/vm_name/prepare/begin and use the following script:<br>
+You may also need to stop a display manager, depending on what you use.
+```
+#!/bin/bash
+# Debugging output
+set -x
 
+# Config load
+source "/etc/libvirt/hooks/kvm.conf"
 
+# Unbind VTConsoles (include as many as you have)
+echo 0 > /sys/class/vtconsole/vtcon0/bind
+echo 0 > /sys/class/vtconsole/vtcon1/bind
 
+# Unbind EFI Framebuffer
+echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/unbind
+
+# Delay to improve stability
+sleep 5
+
+# Unload nvidia drivers
+modprobe -r nvidia_drm
+modprobe -r nvidia_modeset
+modprobe -r drm_kms_helper
+modprobe -r nvidia
+modprobe -r drm
+
+# Unbind GPU
+virsh nodedev-detach $VIRSH_GPU_VIDEO
+virsh nodedev-detach $VIRSH_GPU_AUDIO
+
+# Load VFIO modules
+modprobe vfio
+modprobe vfio_pci
+modprobe vfio_iommu_type1
+```
+Create "revert.sh" in /etc/libvirt/hooks/qemu.d/vm_name/release/end and use the following script:<br>
+If you stopped a display manager, be sure to restart it.
+```
+#!/bin/bash
+# Debugging output
+set -x
+
+# Config load
+source "/etc/libvirt/hooks/kvm.conf"
+
+# Unload VFIO-PCI drivers
+modprobe -r vfio_pci
+modprobe -r vfio_iommu_type1
+modprobe -r vfio
+
+# Bind the GPU
+virsh nodedev-reattach $VIRSH_GPU_VIDEO
+virsh nodedev-reattach $VIRSH_GPU_AUDIO
+
+# Rebind VTConsoles (include as many as you have)
+echo 1 > /sys/class/vtconsole/vtcon0/bind
+echo 1 > /sys/class/vtconsole/vtcon1/bind
+
+# Nvidia config settings
+nvidia-xconfig --query-gpu-info > /dev/null 2>&1
+
+# Bind EFI Framebuffer
+echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/bind
+
+# Delay to improve stability
+sleep 5
+
+# Load nvidia drivers
+modprobe nvidia_drm
+modprobe nvidia_modeset
+modprobe drm_kms_helper
+modprobe nvidia
+modprobe drm
+```
 
 
 
