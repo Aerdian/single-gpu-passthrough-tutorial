@@ -12,10 +12,10 @@
 * [Introduction](#introduction)
     * [Hardware](#hardware)
     * [Disclaimer](#disclaimer)
-* [KVM Install](#kvm)
-    * [Part 1: Install and Configure](#part1-kvm)
-    * [Part 2: Creating the VM](#part2-kvm)
-    * [Part 3: Creating the VM](#part3-kvm)
+* [Tutorial](#tutorial)
+    * [Part 1: Install and Configure](#part1)
+    * [Part 2: Creating the VM](#part2)
+    * [Part 3: Configuring Passthrough](#part3)
 * [Credits & Resources](#credits)
 * [Footnotes](#footnotes)
 
@@ -50,11 +50,11 @@ This guide shows how to install and configure KVM and a GUI in any Arch-based Li
 
 You are solely responsible for your own hardware and system. I accept no liability for you choosing to follow this guide and any problems that arise as a result. You can report an issue on GitHub if you're having problems and I will try to get back to it, but I have no guarantees I will be able to assist. You choose to follow this tutorial at your own risk.
 
-<h2 name="kvm">
-    KVM Install
+<h2 name="tutorial">
+    Tutorial
 </h2>
 
-<h3 name="part1-kvm">
+<h3 name="part1">
   Part 1: Install and Configure
 </h3>
 
@@ -78,7 +78,7 @@ Look for "CONFIG_KVM_AMD" or "CONFIG_KVM_INTEL" in the list.
 
 **Install KVM packages and graphical virt-manager**
 ```
-$ sudo pacman -S qemu virt-manager vde2 ebtables bridge-utils dnsmasq openbsd-netcat
+$ sudo pacman -S qemu virt-manager ovmf vde2 ebtables bridge-utils dnsmasq openbsd-netcat
 ```
 **Enable KVM services**
 ```
@@ -114,11 +114,24 @@ Edit the file at ```/etc/default/grub``` and add the following to the ```GRYB_CM
 iommu=1 amd_iommu=on rd.driver.pre=vfio-pci
 ```
 For Intel, use "intel_iommu" instead of "amd_iommu."<br>
-Note that this is a read-only file, so you'll need editing permissions.
+Note that this is a read-only file, so you'll need editing permissions.<b>
+It's a good idea to reboot your system before continuing.
 
+**Check IOMMU group mapping**
+Create the "check-iommu.sh" file and use the following code:
+```
+#!/bin/bash
+shopt -s nullglob
+for g in /sys/kernel/iommu_groups/*; do
+    echo "IOMMU Group ${g##*/}:"
+    for d in $g/devices/*; do
+        echo -e "\t$(lspci -nns ${d##*/})"
+    done;
+done;
+```
+Run the script and search for the group that includes your GPU. There are probably multiple devices in that group, so be sure to note them all down since you'll need to pass the entire group to your VM.
 
-
-<h3 name="part2-kvm">
+<h3 name="part2">
   Part 2: Creating the VM
 </h3>
 
@@ -145,9 +158,11 @@ Choose "Add Hardware," choose "USB Host Device" and select any USB devices you'd
 We will do more customization to this VM later once we set up passthrough, but let's first intall the OS by choosing "Begin Installation."<br>
 After installing your desired OS, check to make sure everything is working properly. The OS will feel sluggish for now, but networking should be active.
 
-<h3 name="part3-kvm">
-  Part 3: Passthrough 
+<h3 name="part3">
+  Part 3: Configuring Passthrough 
 </h3>
+
+
 
 
 
