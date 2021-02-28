@@ -117,7 +117,7 @@ For Intel, use "intel_iommu" instead of "amd_iommu."<br>
 Note that this is a read-only file, so you'll need editing permissions.<b>
 It's a good idea to reboot your system before continuing.
 
-**Check IOMMU group mapping**<br>
+**Check IOMMU group mapping** <br>
 Create the "check-iommu.sh" file and use the following code:
 ```
 #!/bin/bash
