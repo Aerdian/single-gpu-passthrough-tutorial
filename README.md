@@ -13,8 +13,8 @@
     * [Hardware](#hardware)
     * [Disclaimer](#disclaimer)
 * [KVM Install](#kvm)
-    * [Part 1: Install](#part1-kvm)
-    * [Part 2: Configure](#part2-kvm)
+    * [Part 1: Install and Configure](#part1-kvm)
+    * [Part 2: Creating the VM](#part2-kvm)
     * [Part 3: Creating the VM](#part3-kvm)
 * [Credits & Resources](#credits)
 * [Footnotes](#footnotes)
@@ -55,7 +55,7 @@ You are solely responsible for your own hardware and system. I accept no liabili
 </h2>
 
 <h3 name="part1-kvm">
-  Part 1: Install
+  Part 1: Install and Configure
 </h3>
 
 **Check to ensure virtualization is enabled**
@@ -107,3 +107,32 @@ Verify that nested virtualization is enabled.
 ```
 $ cat /sys.module/kvm_amd/parameters/nested
 ```
+<h3 name="part1-kvm">
+  Part 2: Creating the VM
+</h3>
+
+**Create virtual machine**<br>
+Open ```virt-manager``` and create a new VM (top left corner).<br>
+Choose the type of install, probably local install media.<br>
+Make sure you've download your desired OS and browse for the file on your system.
+Virt Manager should automatically detect the OS, but if not, you can manually select it.<br>
+Choose how much memory and CPU cores you'd like to use, then how much storage you'd like to allocate to the guest.<br>
+Name your guest and select "Customize configuration before install"
+
+**VirtIO drivers for Windows guests (optional)**<br>
+If you're creating a Windows VM, virtIO drivers enable better networking.<br>
+Download the drivers [here](https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md).<br>
+
+Select "Add Hardware" in Virt Manager, choose "Storage," set device type to "CDROM" and locate your virtIO drivers.<br>
+Then, select the "NIC" menu and choose "virtio" as device model.<br>
+
+**Customize settings**<br>
+Under "Boot Options," choose "Enable boot menu" (optional).
+Choose "Add Hardware," choose "USB Host Device" and select any USB devices you'd like, such as your keyboard and mouse.<br>
+
+**Install OS**
+We will do more customization to this VM later once we set up passthrough, but let's first intall the OS by choosing "Begin Installation."
+
+
+
+
