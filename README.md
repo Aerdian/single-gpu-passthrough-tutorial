@@ -103,7 +103,7 @@ Then, edit the file at ```/etc/modprobe.d/kvm.conf``` and add the following line
 ```
 options kvm_amd nested=1
 ```
-**Verify that nested virtualization is enabled.**
+Verify that nested virtualization is enabled.
 ```
 $ cat /sys.module/kvm_amd/parameters/nested
 ```
