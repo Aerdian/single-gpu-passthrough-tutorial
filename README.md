@@ -39,7 +39,7 @@ This guide shows how to install and configure KVM and a GUI in any Arch-based Li
  - GPU: Single dedicated or integrated card. If you have both dedicated and integrated graphics or multiple dedicated cards, I recommend setting up passthrough with multiple GPUs to allow you to use both host and guest simultaneously.
 
 **My System:**
- - OS: Arch Linux 5.11.1
+ - OS: Arch Linux x86_64
  - CPU: AMD Ryzen 7 2700X
  - Motherboard: Gigabyte X470 Aorus Gaming 7
  - GPU: NVidia GeForce GTX 1080
@@ -103,11 +103,22 @@ Then, edit the file at ```/etc/modprobe.d/kvm.conf``` and add the following line
 ```
 options kvm_amd nested=1
 ```
-Verify that nested virtualization is enabled.
+**Verify that nested virtualization is enabled.**
 ```
 $ cat /sys.module/kvm_amd/parameters/nested
 ```
-<h3 name="part1-kvm">
+**Passing IOMMU and VFIO to kernel**
+You'll need to pass both the IOMMU and the VFIO paramaters to the kernel.<br>
+Edit the file at ```/etc/default/grub``` and add the following to the ```GRYB_CMDLINE_LINUX_DEFAULT``` line:
+```
+iommu=1 amd_iommu=on rd.driver.pre=vfio-pci
+```
+For Intel, use "intel_iommu" instead of "amd_iommu."<br>
+Note that this is a read-only file, so you'll need editing permissions.
+
+
+
+<h3 name="part2-kvm">
   Part 2: Creating the VM
 </h3>
 
@@ -130,8 +141,13 @@ Then, select the "NIC" menu and choose "virtio" as device model.<br>
 Under "Boot Options," choose "Enable boot menu" (optional).
 Choose "Add Hardware," choose "USB Host Device" and select any USB devices you'd like, such as your keyboard and mouse.<br>
 
-**Install OS**
-We will do more customization to this VM later once we set up passthrough, but let's first intall the OS by choosing "Begin Installation."
+**Install OS**<br>
+We will do more customization to this VM later once we set up passthrough, but let's first intall the OS by choosing "Begin Installation."<br>
+After installing your desired OS, check to make sure everything is working properly. The OS will feel sluggish for now, but networking should be active.
+
+<h3 name="part3-kvm">
+  Part 3: Passthrough 
+</h3>
 
 
 
