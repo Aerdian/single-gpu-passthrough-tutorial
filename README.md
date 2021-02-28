@@ -107,7 +107,7 @@ Verify that nested virtualization is enabled.
 ```
 $ cat /sys.module/kvm_amd/parameters/nested
 ```
-**Passing IOMMU and VFIO to kernel**
+**Passing IOMMU and VFIO to kernel**<br>
 You'll need to pass both the IOMMU and the VFIO paramaters to the kernel.<br>
 If you use GRUB, edit the file at ```/etc/default/grub``` and add the following to the ```GRYB_CMDLINE_LINUX_DEFAULT``` line:
 ```
@@ -117,7 +117,7 @@ For Intel, use "intel_iommu" instead of "amd_iommu."<br>
 Note that this is a read-only file, so you'll need editing permissions.<b>
 It's a good idea to reboot your system before continuing.
 
-**Check IOMMU group mapping**
+**Check IOMMU group mapping**<br>
 Create the "check-iommu.sh" file and use the following code:
 ```
 #!/bin/bash
@@ -166,7 +166,7 @@ After installing your desired OS, check to make sure everything is working prope
 **Pass the GPU IOMMU group**
 Go to the virtual machine details in Virt Manager, choose "Add Hardware," select "PCI Host Device," and choose all of the devices in the IOMMU group with your GPU.
 
-**Nvidia Pascal Patch (optional)**
+**Nvidia Pascal Patch (optional)**<br>
 If you use Nvidia Pascal (GTX 10 series), a patch is necessary for this to work. You can download nvflash from the AUR and then type the following commands to download your current GPU BIOS:
 ```
 $ sudo rmmod nvidia_drm nvidia_modeset nvidia
@@ -192,7 +192,7 @@ If you're using a physical drive instead of emulated storage, you'll need to cha
       <address type='drive' controller='0' bus='0' target='0' unit='0'/>
  </disk>
 ```
-**Set up hook manager**
+**Set up hook manager**<br>
 To transfer the VFIO drivers from the host to the guest and vice versa automatically, you first need to create the directory at ```/etc/libvirt/hooks```. Then, run the following commands from [The Passthrough Post](https://passthroughpo.st/simple-per-vm-libvirt-hooks-with-the-vfio-tools-hook-helper/):
 ```
 $ sudo wget 'https://raw.githubusercontent.com/PassthroughPOST/VFIO-Tools/master/libvirt_hooks/qemu' \
