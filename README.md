@@ -58,29 +58,29 @@ You are solely responsible for your own hardware and system. I accept no liabili
   Part 1: Install
 </h3>
 
-**Check to ensure virtualization is enabled.**
+**Check to ensure virtualization is enabled**
 ```
 $ LC_ALL=C lscpu | grep Virtualization
 ```
 If "AMD-V" or "VT-x" is displayed, virtualization is enabled. If not, you'll need to enable it in your BIOS.
 
-**Check to ensure IOMMU is enabled.**
+**Check to ensure IOMMU is enabled**
 ```
 $ sudo dmesg | grep IOMMU
 ```
 If it isn't enabled, you'll need to enable this in your BIOS.
 
-**Check to ensure your kernel supports KVM.**
+**Check to ensure your kernel supports KVM**
 ```
 $ zgrep CONFIG_KVM /proc/config.gz
 ```
 Look for "CONFIG_KVM_AMD" or "CONFIG_KVM_INTEL" in the list.
 
-**Install KVM packages and graphical virt-manager.**
+**Install KVM packages and graphical virt-manager**
 ```
 $ sudo pacman -S qemu virt-manager vde2 ebtables bridge-utils dnsmasq openbsd-netcat
 ```
-**Enable KVM services.**
+**Enable KVM services**
 ```
 $ sudo systemctl enable libvirtd.service
 $ sudo systemctl start libvirtd.service
