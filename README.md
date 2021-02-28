@@ -135,7 +135,8 @@ Run the script and search for the group that includes your GPU. There are probab
   Part 2: Creating the VM
 </h3>
 
-**Create virtual machine**<br>
+**Create virtual machine**
+<br>
 Open ```virt-manager``` and create a new VM (top left corner).<br>
 Choose the type of install, probably local install media.<br>
 Make sure you've download your desired OS and browse for the file on your system.
